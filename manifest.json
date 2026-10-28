@@ -1,0 +1,15 @@
+
+{
+  "id": "./",
+  "name": "ذَكِّرْنِي - أذكار المسلم",
+  "short_name": "ذَكِّرْنِي",
+  "description": "تطبيق أذكار المسلم والتذكير بذكر الله",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#022c22",
+  "theme_color": "#022c22"
+}
