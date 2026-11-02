@@ -1,9 +1,10 @@
-const CACHE_NAME = "zakkerni-v1";
+const CACHE_NAME = "zakkerni-v2";
 
 const APP_FILES = [
   "./",
   "./index.html",
-  "./manifest.json"
+  "./manifest.json",
+  "./audio/salawat.mp3"
 ];
 
 self.addEventListener("install", event => {
