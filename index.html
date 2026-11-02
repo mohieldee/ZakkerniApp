@@ -125,6 +125,28 @@ footer { text-align: center; padding: 25px; color: #b7c9bd; }
     <button onclick="saveReminder()">حفظ الوقت</button>
     <p id="reminderStatus">لم يتم ضبط التذكير بعد.</p>
   </section>
+
+  <section class="panel" id="salawatReminderPanel">
+    <h2>🔊 تذكير بالصلاة على النبي ﷺ</h2>
+    <p>استمع إلى التسجيل، وحدد الفاصل الزمني للتذكير.</p>
+    <audio id="salawatAudio" preload="auto" src="./audio/salawat.mp3"></audio>
+    <div class="actions">
+      <button type="button" onclick="previewSalawat()">استمع إلى الصوت</button>
+    </div>
+    <p><label for="salawatInterval">كرّر التذكير كل:</label></p>
+    <div class="actions">
+      <input id="salawatInterval" type="number" min="1" max="24" value="1" inputmode="numeric" style="width:45%;font:inherit;padding:10px;border-radius:8px">
+      <select id="salawatUnit" style="flex:1;font:inherit;padding:10px;border-radius:8px">
+        <option value="1">دقيقة</option>
+        <option value="60" selected>ساعة</option>
+      </select>
+    </div>
+    <div class="actions">
+      <button type="button" onclick="startSalawatReminder()">تفعيل التذكير</button>
+      <button type="button" onclick="stopSalawatReminder()">إيقاف التذكير</button>
+    </div>
+    <p id="salawatStatus">التذكير غير مفعّل.</p>
+  </section>
 </main>
 <footer>اللهم اجعل ألسنتنا عامرة بذكرك وقلوبنا مطمئنة بقربك</footer>
 
@@ -213,6 +235,62 @@ function saveReminder() {
   }
 }
   
+
+let salawatWebTimer = null;
+function getSalawatIntervalMinutes() {
+  const amount = Number(document.getElementById("salawatInterval").value);
+  const unit = Number(document.getElementById("salawatUnit").value);
+  if (!Number.isInteger(amount) || amount < 1 || amount > 24) return 0;
+  return amount * unit;
+}
+function previewSalawat() {
+  const audio = document.getElementById("salawatAudio");
+  audio.pause();
+  audio.currentTime = 0;
+  audio.play().catch(() => {
+    document.getElementById("salawatStatus").textContent = "تعذر تشغيل الصوت. جرّب مرة أخرى.";
+  });
+}
+function startSalawatReminder() {
+  const minutes = getSalawatIntervalMinutes();
+  const status = document.getElementById("salawatStatus");
+  if (!minutes) {
+    status.textContent = "أدخل رقمًا من 1 إلى 24، ثم اختر الدقيقة أو الساعة.";
+    return;
+  }
+  try { localStorage.setItem("zakkerniSalawatInterval", String(minutes)); } catch (e) {}
+  if (window.AndroidReminder && typeof AndroidReminder.startSalawatReminder === "function") {
+    AndroidReminder.startSalawatReminder(minutes);
+    status.textContent = "تم ضبط التذكير كل " + minutes + " دقيقة. سيعمل في تطبيق أندرويد حتى عند إغلاق الشاشة.";
+    return;
+  }
+  if (salawatWebTimer) clearInterval(salawatWebTimer);
+  salawatWebTimer = setInterval(previewSalawat, minutes * 60 * 1000);
+  status.textContent = "تم ضبط التذكير كل " + minutes + " دقيقة. في نسخة المتصفح يجب إبقاء الصفحة مفتوحة.";
+}
+function stopSalawatReminder() {
+  if (salawatWebTimer) clearInterval(salawatWebTimer);
+  salawatWebTimer = null;
+  if (window.AndroidReminder && typeof AndroidReminder.stopSalawatReminder === "function") {
+    AndroidReminder.stopSalawatReminder();
+  }
+  document.getElementById("salawatStatus").textContent = "تم إيقاف التذكير.";
+}
+(function restoreSalawatInterval() {
+  try {
+    const saved = Number(localStorage.getItem("zakkerniSalawatInterval"));
+    if (saved > 0) {
+      if (saved % 60 === 0 && saved / 60 <= 24) {
+        document.getElementById("salawatInterval").value = saved / 60;
+        document.getElementById("salawatUnit").value = "60";
+      } else if (saved <= 24) {
+        document.getElementById("salawatInterval").value = saved;
+        document.getElementById("salawatUnit").value = "1";
+      }
+    }
+  } catch (e) {}
+})();
+
 renderDhikr();
 </script>
 
