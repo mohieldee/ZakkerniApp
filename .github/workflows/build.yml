@@ -34,7 +34,7 @@ jobs:
           mkdir -p app/src/main/java/com/zakkerni/app
           cp index.html app/src/main/assets/index.html
           mkdir -p app/src/main/assets/audio
-          cp audio/salawat.mp3 app/src/main/assets/audio/salawat.mp3
+          cp audio/*.mp3 app/src/main/assets/audio/salawat.mp3
           cat > settings.gradle <<'EOF'
           pluginManagement {
               repositories {
